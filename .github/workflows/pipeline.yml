@@ -1,0 +1,42 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+        dc:
+          - dmd-latest
+          - ldc-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Setup D compiler
+        uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ${{ matrix.dc }}
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: 'Build & Test'
+        run: |
+          # Build and run tests, as defined by `unittest` configuration
+          # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
+          # See https://dub.pm/package-format-json.html#configurations
+          dub test
+          cd examples/example1
+          dub build -b=release
